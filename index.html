@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Quality Monitor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #1a202c; /* Dark background */
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen text-gray-200 p-4">
+
+    <div class="bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-lg w-full">
+        <!-- Header Section -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-white mb-2">Air Quality Monitor</h1>
+            <p class="text-gray-400">ข้อมูลคุณภาพอากาศแบบเรียลไทม์</p>
+            <div id="status" class="mt-4 text-sm font-medium">
+                <span id="status-text" class="text-green-400">สถานะ: กำลังเชื่อมต่อ...</span>
+            </div>
+        </header>
+
+        <!-- Sensor Readings Grid -->
+        <div id="sensor-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+            <!-- PM2.5 Card -->
+            <div class="bg-gray-700 rounded-xl p-6 flex flex-col items-center shadow-lg">
+                <h2 class="text-xl font-bold mb-2">PM2.5</h2>
+                <div class="text-4xl font-light text-green-400 mb-2" id="pm25">--</div>
+                <p class="text-sm text-gray-400">μg/m³</p>
+            </div>
+
+            <!-- CO2 Card -->
+            <div class="bg-gray-700 rounded-xl p-6 flex flex-col items-center shadow-lg">
+                <h2 class="text-xl font-bold mb-2">CO2</h2>
+                <div class="text-4xl font-light text-white mb-2" id="co2">--</div>
+                <p class="text-sm text-gray-400">ppm</p>
+            </div>
+
+            <!-- Ozone (O3) Card -->
+            <div class="bg-gray-700 rounded-xl p-6 flex flex-col items-center shadow-lg">
+                <h2 class="text-xl font-bold mb-2">Ozone (O3)</h2>
+                <div class="text-4xl font-light text-white mb-2" id="o3">--</div>
+                <p class="text-sm text-gray-400">ppm</p>
+            </div>
+
+            <!-- Temperature Card -->
+            <div class="bg-gray-700 rounded-xl p-6 flex flex-col items-center shadow-lg">
+                <h2 class="text-xl font-bold mb-2">อุณหภูมิ</h2>
+                <div class="text-4xl font-light text-white mb-2" id="temp">--</div>
+                <p class="text-sm text-gray-400">°C</p>
+            </div>
+
+            <!-- Humidity Card -->
+            <div class="bg-gray-700 rounded-xl p-6 flex flex-col items-center shadow-lg">
+                <h2 class="text-xl font-bold mb-2">ความชื้น</h2>
+                <div class="text-4xl font-light text-white mb-2" id="hum">--</div>
+                <p class="text-sm text-gray-400">%</p>
+            </div>
+
+            <!-- VOC Card -->
+            <div class="bg-gray-700 rounded-xl p-6 flex flex-col items-center shadow-lg">
+                <h2 class="text-xl font-bold mb-2">VOC</h2>
+                <div class="text-4xl font-light text-white mb-2" id="voc">--</div>
+                <p class="text-sm text-gray-400">mg/m³</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Function to update the sensor values on the page
+            function updateSensorValues(data) {
+                document.getElementById('pm25').textContent = data.pm25.toFixed(1);
+                document.getElementById('co2').textContent = data.co2.toFixed(0);
+                document.getElementById('o3').textContent = data.o3.toFixed(2);
+                document.getElementById('temp').textContent = data.temp.toFixed(1);
+                document.getElementById('hum').textContent = data.hum.toFixed(1);
+                document.getElementById('voc').textContent = data.voc.toFixed(2);
+
+                // Change PM2.5 color based on air quality
+                const pm25Element = document.getElementById('pm25');
+                pm25Element.classList.remove('text-green-400', 'text-yellow-400', 'text-red-400');
+                if (data.pm25 <= 25) {
+                    pm25Element.classList.add('text-green-400'); // Good
+                } else if (data.pm25 <= 50) {
+                    pm25Element.classList.add('text-yellow-400'); // Moderate
+                } else {
+                    pm25Element.classList.add('text-red-400'); // Unhealthy
+                }
+            }
+
+            // Function to simulate fetching data
+            // You will replace this with a real fetch to your server
+            function fetchData() {
+                // Change the URL to your actual endpoint
+                // e.g., 'http://your.server.com/data.json' or whatever your server returns
+                const API_URL = 'https://api.example.com/air-quality-data'; // Placeholder URL
+
+                // Simulating a successful API call with random data
+                const simulatedData = {
+                    pm25: Math.random() * 80,
+                    co2: 400 + Math.random() * 600,
+                    o3: Math.random() * 0.2,
+                    temp: 25 + Math.random() * 5,
+                    hum: 50 + Math.random() * 20,
+                    voc: Math.random() * 0.5
+                };
+
+                // For demonstration, we use a fake promise
+                // In a real application, you'd use a `fetch` call
+                const fetchPromise = new Promise(resolve => setTimeout(() => resolve(simulatedData), 1000));
+
+                fetchPromise
+                    .then(data => {
+                        updateSensorValues(data);
+                        document.getElementById('status-text').textContent = 'สถานะ: ข้อมูลล่าสุด';
+                        document.getElementById('status-text').classList.remove('text-red-400');
+                        document.getElementById('status-text').classList.add('text-green-400');
+                    })
+                    .catch(error => {
+                        console.error('Failed to fetch data:', error);
+                        document.getElementById('status-text').textContent = 'สถานะ: การเชื่อมต่อล้มเหลว';
+                        document.getElementById('status-text').classList.remove('text-green-400');
+                        document.getElementById('status-text').classList.add('text-red-400');
+                    });
+            }
+
+            // Fetch data every 5 seconds (5000 milliseconds)
+            setInterval(fetchData, 5000);
+
+            // Initial data fetch
+            fetchData();
+        });
+    </script>
+
+</body>
+</html>
